@@ -51,7 +51,7 @@ const FileUpload = () => {
       form_data.append(key, data[key]);
     });
     try {
-      let response = await fetch("/submit-file", {
+      let response = await fetch("/upload/file", {
         method: "POST",
         body: form_data,
       });
