@@ -5,6 +5,7 @@ class Series extends DataModel {
     this.name = data.name;
     this.season = data.season;
     this.episode = data.episode;
+    this.episodeName = data.episodeName;
     this.dir = `${data.name}/${data.season}/${data.episode}`;
   }
 }
