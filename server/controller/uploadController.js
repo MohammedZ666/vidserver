@@ -1,8 +1,7 @@
 const fs = require("fs");
 const Movie = require("../model/Movie");
 const Series = require("../model/Series");
-const indexDir = `${process.env.SAVE_DIR}/index.json`;
-const indexFile = require(indexDir);
+const indexFile = require(process.env.INDEX_DIR);
 
 const uploadFile = (req, res, next) => {
   const data = req.body;
@@ -20,10 +19,13 @@ const uploadFile = (req, res, next) => {
       default:
         throw Error(`undefined type ${data.type}`);
     }
-    fs.writeFileSync(indexDir, JSON.stringify(indexTempFile, null, 2));
+    fs.writeFileSync(
+      process.env.INDEX_DIR,
+      JSON.stringify(indexTempFile, null, 2)
+    );
   } catch (error) {
     if (fs.existsSync(data.dir)) fs.unlinkSync(data.dir);
-    fs.writeFileSync(indexDir, JSON.stringify(indexFile, null, 2));
+    fs.writeFileSync(process.env.INDEX_DIR, JSON.stringify(indexFile, null, 2));
     next(error);
   }
 };
