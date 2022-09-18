@@ -5,16 +5,24 @@ const indexFile = require(process.env.INDEX_DIR);
 
 const uploadFile = (req, res, next) => {
   const data = req.body;
-  const indexTempFile = { ...indexFile };
+  let indexTempFile = { ...indexFile };
+  console.log("recieved request", req.body);
   try {
     switch (data.type) {
       case "series":
-        data.episodeName = file.originalname;
+        data.episodeName = req.file.originalname;
+        indexTempFile = addNestedKey(indexFile, [
+          "series",
+          data.name,
+          data.season,
+          data.episode,
+        ]);
         indexTempFile["series"][data.name][data.season][data.episode] =
           new Series(data);
         break;
       case "movie":
-        indexTempFile["movie"][data.name] = new Movie(data);
+        indexTempFile = addNestedKey(indexFile, ["movies", data.name]);
+        indexTempFile["movies"][data.name] = new Movie(data);
         break;
       default:
         throw Error(`undefined type ${data.type}`);
@@ -23,10 +31,23 @@ const uploadFile = (req, res, next) => {
       process.env.INDEX_DIR,
       JSON.stringify(indexTempFile, null, 2)
     );
+    res.redirect("/");
   } catch (error) {
-    if (fs.existsSync(data.dir)) fs.unlinkSync(data.dir);
+    console.log(error);
+    if (fs.existsSync(data.dir))
+      fs.rmdirSync(data.dir, { recursive: true, force: true });
     fs.writeFileSync(process.env.INDEX_DIR, JSON.stringify(indexFile, null, 2));
     next(error);
   }
 };
+
+const addNestedKey = (object, keys) => {
+  let ref = object;
+  for (let i = 0; i < keys.length; i++) {
+    if (!ref[keys[i]]) ref[keys[i]] = {};
+    ref = ref[keys[i]];
+  }
+  return object;
+};
+
 module.exports = { uploadFile };

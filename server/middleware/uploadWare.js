@@ -1,17 +1,18 @@
 const multer = require("multer");
 const fs = require("fs");
 
-const mkdir = (req) => {
+const mkdir = (req, file) => {
   let data = req.body;
-  let dir = "";
+  let dir = `${process.env.SAVE_DIR}/${data.name}`;
   switch (data.type) {
     case "series":
-      dir = `${process.env.SAVE_DIR}/${data.name}/${data.season}/${data.episode}`;
+      dir += `/${data.season}/${data.episode}/${file.originalname}`;
       break;
     case "movie":
-      dir = `${process.env.SAVE_DIR}/${data.name}`;
+      dir += `/${file.originalname}`;
+      break;
     default:
-      throw Error(`undefined type ${data.type}`);
+      throw Error(`undefined type => ${data.type}`);
   }
   if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
   req.body.dir = dir;
@@ -19,7 +20,7 @@ const mkdir = (req) => {
 };
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    req = mkdir(req);
+    req = mkdir(req, file);
     cb(null, req.body.dir);
   },
   filename: (req, file, cb) => {
